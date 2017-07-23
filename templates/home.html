@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layout"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Coffee Pickles</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+</head>
+<body>
+    <div layout:fragment="content">
+    <div class="flex-container" >
+        <div id="user">
+        </div>
+        <div id="controls">
+        </div>
+    </div>
+    <!-- build some charts! -->
+    <div id="line_chart_div"></div>
+    <div id="day_chart_div"></div>
+    </div>
+</body>
+</html>
