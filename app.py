@@ -1,11 +1,13 @@
+#!/bin/env python
+
 # -*- coding:utf-8 -*-
 
-import json
+import simplejson
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 from pypickles.domain import customer, coffee, payment, base
 from flask import Flask, request, session, g, redirect, url_for, abort, \
-     render_template, flash, jsonify
+     render_template, flash
 
 
 app = Flask(__name__)
@@ -13,10 +15,10 @@ app.config.update(dict(
     DATABASE='coffeepicklesdb',
     DB_USER='coffeeuser',
     DB_PORT='5432',
-    DB_HOST='127.0.0.1'
+    DB_HOST='127.0.0.1',
     DEBUG=False
 ))
-app.config.from_envvar('DB_PASS', silent=True)
+app.config.from_envvar('APP_CONFIG', silent=True)
 
 
 def connect_db():
@@ -65,14 +67,14 @@ def index():
 def get_coffee_days(user_id):
     session = get_db()
     c = customer.Customer.find_by_id(session, int(user_id))
-    return jsonify(c)
+    return simplejson.dumps(c.as_dict(), use_decimal=True)
 
 
 @app.route('/coffeedays/<user_id>')
-def get_reviews(book_id):
+def get_reviews(user_id):
     session = get_db()
     c = customer.Customer.find_by_id(session, int(user_id))
-    return jsonify(c)
+    return simplejson.dumps(c.as_dict(), use_decimal=True)
 
 
 @app.route('/coffee', methods=['POST'])
@@ -80,7 +82,7 @@ def add_coffee(user_id):
     pass
     session = get_db()
     c = customer.Customer.find_by_id(session, int(user_id))
-    return jsonify(c)
+    return simplejson.dumps(c.as_dict(), use_decimal=True)
 
 
 @app.route('/payment', methods=['POST'])

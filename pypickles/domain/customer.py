@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Numeric
+from sqlalchemy import Column, Integer, String, Numeric, inspect
 from sqlalchemy.orm import relationship
 from pypickles.domain.base import Base
 
@@ -31,3 +31,6 @@ class Customer(Base):
     def find_by_id(cls, session, customer_id):
         return session.query(Customer).filter(Customer.id == customer_id).one()
 
+    def as_dict(self):
+        return {c.key: getattr(self, c.key)
+                for c in inspect(self).mapper.column_attrs}

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, Numeric, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, Numeric, ForeignKey, inspect
 from sqlalchemy.orm import relationship
 from pypickles.domain.base import Base
 from pypickles.domain import coffee
@@ -34,3 +34,7 @@ class Coffee(Base):
     @classmethod
     def find_by_id(cls, session, coffee_id):
         return session.query(Coffee).filter(Coffee.id == coffee_id).one()
+
+    def as_dict(self):
+        return {c.key: getattr(self, c.key)
+                for c in inspect(self).mapper.column_attrs}

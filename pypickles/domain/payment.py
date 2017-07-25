@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, Numeric, ForeignKey
+from sqlalchemy import Column, DateTime, Integer, Numeric, ForeignKey, inspect
 from sqlalchemy.orm import relationship
 from pypickles.domain.base import Base
 
@@ -26,3 +26,7 @@ class Payment(Base):
     @classmethod
     def find_by_id(cls, session, payment_id):
         return session.query(Payment).filter(Payment.id == payment_id).one()
+
+    def as_dict(self):
+        return {c.key: getattr(self, c.key)
+                for c in inspect(self).mapper.column_attrs}
