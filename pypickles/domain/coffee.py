@@ -1,9 +1,6 @@
 from sqlalchemy import Column, Integer, DateTime, Numeric, ForeignKey, inspect
 from sqlalchemy.orm import relationship
 from pypickles.domain.base import Base
-from pypickles.domain import coffee
-from pypickles.domain import customer
-from pypickles.domain import payment
 
 class Coffee(Base):
 

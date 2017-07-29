@@ -2,7 +2,10 @@ import sqlalchemy
 import datetime
 from sqlalchemy.orm import sessionmaker, scoped_session
 import unittest
-from pypickles.domain import coffee, base, customer, payment
+from pypickles.domain import base
+from pypickles.domain import customer
+from pypickles.domain import payment
+
 
 
 class TestPayment(unittest.TestCase):

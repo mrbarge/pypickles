@@ -1,7 +1,7 @@
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 import unittest
-from pypickles.domain import customer, payment, coffee, base
+from pypickles.domain import customer, base
 
 class TestCustomer(unittest.TestCase):
 
