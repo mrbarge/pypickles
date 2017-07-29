@@ -4,7 +4,7 @@ from pypickles.domain.base import Base
 
 class Customer(Base):
     __tablename__ = 'customer'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     user_name = Column(String)
     balance = Column(Numeric)
 
