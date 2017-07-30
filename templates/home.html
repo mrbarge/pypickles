@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Coffee Pickles</title>
     <link rel="stylesheet" media="screen" href = "{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" media="screen" href = "{{ url_for('static', filename='css/bootstrap-theme.min.css') }}">
     <meta name="viewport" content = "width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -27,14 +28,15 @@
                     <ul class="nav navbar-nav navbar-right">
                         <li><a href="/">Dashboard</a></li>
                         <li><a href="/">Help</a></li>
-                        <li>Logged in as </li>
                     </ul>
                     <form class="navbar-form navbar-right" action="{{ url_for('add_coffee') }}" method="post">
                         <input type="submit" value="Coffee!" class="btn btn-danger">
                     </form>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>Current balance: </li>
-                        <li>All-time coffees: </li>
+                    <ul class="nav navbar-nav navbar-right navbar-text">
+                        <li>Current balance: {{ user.balance }}</li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right navbar-text">
+                        <li>All-time coffees: {{ coffee_total }} </li>
                     </ul>
                 </div>
             </div>
@@ -65,12 +67,12 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <th:block th:each="pay : ${user.getRecentPayments()}">
+                            {% for payment in payments %}
                             <tr>
-                                <td th:text="| ${pay.getDate()}|"/>
-                                <td th:text="| $${pay.getAmount()}|"/>
+                                <td>{{ payment.date }}</td>
+                                <td>{{ payment.amount }}</td>
                             </tr>
-                            </th:block>
+                            {% endfor %}
                             </tbody>
                         </table>
                     </div>

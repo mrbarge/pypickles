@@ -81,18 +81,21 @@ def get_db():
         g.db_session, g.db_meta = get_db_session()
     return g.db_session
 
-
 @app.before_request
 def before_request():
     db_session = get_db()
     g.user = None
-    c = db_session.query(Customer).filter(Customer.user_name=='user2').first()
+    c = db_session.query(Customer).filter(Customer.user_name=='user1').first()
     if c is not None:
         g.user = c
 
 @app.route('/')
 def index():
-    return render_template('home.html')
+    if hasattr(g, 'user') and g.user is not None:
+        session = get_db()
+        recent_payments = session.query(Payment).filter(Payment.user == g.user).order_by(Payment.date.desc()).limit(5).all()
+        num_coffees = session.query(Coffee).filter(Coffee.user == g.user).count()
+    return render_template('home.html',payments=recent_payments, user=g.user, coffee_total=num_coffees)
 
 @app.route('/coffeedate/<user_id>')
 def get_coffee_days(user_id):
@@ -100,28 +103,28 @@ def get_coffee_days(user_id):
     c = Customer.find_by_id(db_session, int(user_id))
     return simplejson.dumps(c.as_dict(), use_decimal=True)
 
-
 @app.route('/coffeedays/<user_id>')
 def get_reviews(user_id):
     db_session = get_db()
     c = Customer.find_by_id(db_session, int(user_id))
     return simplejson.dumps(c.as_dict(), use_decimal=True)
 
-
 @app.route('/coffee', methods=['POST'])
 def add_coffee():
     try:
         if hasattr(g, 'user') and g.user is not None:
+            c = Coffee(user=g.user, price=1)
             db_session = get_db()
-            db_session.add(g.user)
+            db_session.query(Customer).filter(Customer.id == g.user.id).update({'balance': g.user.balance - c.price})
+            db_session.add(c)
             db_session.commit()
             flash('Recorded a coffee.', 'Info')
         else:
             flash('You are not a registered user.', 'Error')
     except Exception as err:
         flash('Unable to add a coffee: {0}'.format(str(err)), 'Error')
-
-    return render_template('home.html')
+    return redirect(url_for('index'))
+    #return render_template('home.html')
 
 @app.route('/payment', methods=['POST'])
 def add_payment():
@@ -132,13 +135,14 @@ def add_payment():
             amount = Decimal(request.form['amount'])
             p = Payment(user=g.user, amount=amount)
             session.add(p)
+            session.query(Customer).filter(Customer.id == g.user.id).update({'balance': g.user.balance + p.amount})
             session.commit()
             flash('Added payment of ${}'.format(amount), 'Info')
         else:
             flash('You are not a registered user.', 'Error')
     except Exception as err:
         flash('Please supply a payment amount as a positive number.', 'Error')
-    return render_template('home.html')
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
