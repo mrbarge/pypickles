@@ -9,6 +9,7 @@
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 </head>
 <body>
+
     <div layout:fragment="content">
 
         <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -42,7 +43,17 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-offset-1 col-md-10">
+                    <br/><br/>
                     <h1 class="page-header">Dashboard</h1>
+                    <div class="alert danger" role="alert">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-success" role="alert"><b>{{ category }}</b>: {{ message }}</div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+                    </div>
 
                     <div class="table-responsive col-md-9">
                         <h2 class="sub-header">Recent payments</h2>

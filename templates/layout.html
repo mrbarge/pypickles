@@ -1,25 +1,10 @@
-<!DOCTYPE html>
-<html lang="en"
-    xmlns:th="http://www.thymeleaf.org"
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<!doctype html>
 <head>
-    <meta charset="ut8">
-    <title>Coffee Pickles</title>
-    <link type="text/css" href="/static/bootstrap.min.css" rel="stylesheet">
-    <script type="text/javascript" src="/static/bootstrap.min.js"></script>
+    <meta charset="UTF-8">
+    <title>PyPickles</title>
+    <link rel="stylesheet" media="screen" href = "{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <meta name="viewport" content = "width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 </head>
-<body>
-<header>
-    <hgroup>
-        <h1><a href="/"><span class="blue">PyPickles</span></a></h1>
-    </hgroup>
-</header>
 
-<div id="main">
-    <div layout:fragment="content">
-        Page content goes here
-    </div>
-</div>
-
-</body>
-</html>
