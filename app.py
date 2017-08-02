@@ -1,14 +1,16 @@
 #!/bin/env python
 import simplejson
+import calendar
 import sqlalchemy
+from collections import OrderedDict
 from sqlalchemy.orm import sessionmaker, scoped_session
 from flask import Flask, request, flash, session, g, redirect, url_for, abort, \
-     render_template, flash
+     render_template, flash, jsonify
 from pypickles.domain.customer import Customer
 from pypickles.domain.coffee import Coffee
 from pypickles.domain.payment import Payment
 from decimal import Decimal
-
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config.update(dict(
@@ -97,17 +99,39 @@ def index():
         num_coffees = session.query(Coffee).filter(Coffee.user == g.user).count()
     return render_template('home.html',payments=recent_payments, user=g.user, coffee_total=num_coffees)
 
-@app.route('/coffeedate/<user_id>')
-def get_coffee_days(user_id):
+@app.route('/coffeedates/<user_name>')
+def get_coffee_dates(user_name):
+    history_days = 7
     db_session = get_db()
-    c = Customer.find_by_id(db_session, int(user_id))
-    return simplejson.dumps(c.as_dict(), use_decimal=True)
+    user = db_session.query(Customer).filter(Customer.user_name == user_name).first()
+    if user is None:
+        return jsonify({"error": "user does not exist"})
 
-@app.route('/coffeedays/<user_id>')
-def get_reviews(user_id):
+    curr_date = datetime.today()
+    base_dates = OrderedDict(((curr_date - timedelta(days=int(x))).strftime('%Y-%m-%d'), 0) for x in range(0, int(history_days)))
+    c = db_session.query(sqlalchemy.func.to_char(Coffee.date, 'YYYY-MM-DD'),
+                         sqlalchemy.func.count(Coffee.date)).filter(Coffee.user_id == user.id).group_by(sqlalchemy.func.to_char(Coffee.date, 'YYYY-MM-DD')).order_by(sqlalchemy.func.min(Coffee.date)).limit(history_days).all()
+    for (k, v) in c:
+        base_dates[str(k)] = int(v)
+
+    return jsonify(list(base_dates.items()))
+
+
+@app.route('/coffeedays/<user_name>')
+def get_coffee_days(user_name):
     db_session = get_db()
-    c = Customer.find_by_id(db_session, int(user_id))
-    return simplejson.dumps(c.as_dict(), use_decimal=True)
+    user = db_session.query(Customer).filter(Customer.user_name == user_name).first()
+    if user is None:
+        return jsonify({"error": "user does not exist"})
+
+    data = OrderedDict((calendar.day_name[x], 0) for x in range(0,7))
+    print data
+    c = db_session.query(sqlalchemy.func.to_char(Coffee.date, 'FMDay'),
+                         sqlalchemy.func.count(Coffee.date)).filter(Coffee.user_id == user.id).group_by(sqlalchemy.func.to_char(Coffee.date, 'FMDay')).all()
+    for (k, v) in c:
+        data[str(k)] = int(v)
+
+    return jsonify(list(data.items()))
 
 @app.route('/coffee', methods=['POST'])
 def add_coffee():
