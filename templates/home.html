@@ -3,11 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <title>Coffee Pickles</title>
+    <link rel="stylesheet" media="screen" href = "{{ url_for('static', filename='css/c3.min.css') }}">
     <link rel="stylesheet" media="screen" href = "{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" media="screen" href = "{{ url_for('static', filename='css/bootstrap-theme.min.css') }}">
     <meta name="viewport" content = "width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/c3.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/d3.min.js') }}"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script th:inline="javascript">
+
+        $.ajax({
+            url: "/coffeedates/user1",
+            dataType: "json"
+        }).done(function(jsonData)  {
+
+            l = jsonData.length;
+            x_keys = ['x'];
+            x_data = ['data1'];
+            for (var i=0; i < l; i++) {
+                x_keys.push(jsonData[i][0]);
+                x_data.push(jsonData[i][1]);
+            }
+            console.log(x_data);
+            draw_data = {
+                x: 'x',
+                xFormat: '%Y-%m-%d',
+                columns: [
+                    x_keys,
+                    x_data
+                ]
+            }
+
+            var chart = c3.generate({
+                data: draw_data,
+                axis: {
+                    x: {
+                        type: 'timeseries'
+                    }
+                },
+                bindto: '#chart1'
+            });
+        });
+    </script>
+
+    <script th:inline="javascript">
+
+        $.ajax({
+            url: "/coffeedays/user1",
+            dataType: "json"
+        }).done(function(jsonData)  {
+
+            l = jsonData.length;
+            x_keys = ['x'];
+            x_data = ['data1'];
+            for (var i=0; i < l; i++) {
+                x_keys.push(jsonData[i][0]);
+                x_data.push(jsonData[i][1]);
+            }
+            draw_data = {
+                x: 'x',
+                xFormat: '%A',
+                columns: [
+                    x_keys,
+                    x_data
+                ],
+                types: {
+                    data1: 'bar',
+                }
+            }
+
+            var chart2 = c3.generate({
+                data: draw_data,
+                axis: {
+                    rotated: true,
+                    x: {
+                        type: 'category',
+                        categories: x_keys
+                    }
+                },
+                bindto: '#chart2'
+            });
+        });
+    </script>
+
 </head>
 <body>
 
@@ -42,11 +120,20 @@
             </div>
         </nav>
 
+
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-offset-1 col-md-10">
                     <br/><br/>
                     <h1 class="page-header">Dashboard</h1>
+                    <div class="row placeholders">
+                        <div class="col-md-6 placeholder">
+                            <div id="chart1"></div>
+                        </div>
+                        <div class="col-md-6 placeholder">
+                            <div id="chart2"></div>
+                        </div>
+                    </div>
                     <div class="alert danger" role="alert">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                       {% if messages %}
