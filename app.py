@@ -1,16 +1,15 @@
 #!/bin/env python
-import simplejson
 import calendar
 import sqlalchemy
 from collections import OrderedDict
 from sqlalchemy.orm import sessionmaker, scoped_session
-from flask import Flask, request, flash, session, g, redirect, url_for, abort, \
+from flask import Flask, request, g, redirect, url_for, \
      render_template, flash, jsonify
+from decimal import Decimal
+from datetime import datetime, timedelta
 from pypickles.domain.customer import Customer
 from pypickles.domain.coffee import Coffee
 from pypickles.domain.payment import Payment
-from decimal import Decimal
-from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config.update(dict(
@@ -18,6 +17,7 @@ app.config.update(dict(
     DB_USER='coffeeuser',
     DB_PORT='5432',
     DB_HOST='127.0.0.1',
+    COFFEE_PRICE=1,
     DEBUG=False
 ))
 app.config.from_envvar('APP_CONFIG', silent=True)
@@ -114,7 +114,8 @@ def get_coffee_dates(user_name):
     for (k, v) in c:
         base_dates[str(k)] = int(v)
 
-    return jsonify(list(base_dates.items()))
+    return jsonify(base_dates)
+#    return jsonify(list(base_dates.items()))
 
 
 @app.route('/coffeedays/<user_name>')
@@ -131,13 +132,14 @@ def get_coffee_days(user_name):
     for (k, v) in c:
         data[str(k)] = int(v)
 
-    return jsonify(list(data.items()))
+    return jsonify(data)
+#    return jsonify(list(data.items()))
 
 @app.route('/coffee', methods=['POST'])
 def add_coffee():
     try:
         if hasattr(g, 'user') and g.user is not None:
-            c = Coffee(user=g.user, price=1)
+            c = Coffee(user=g.user, price=app.config['COFFEE_PRICE'])
             db_session = get_db()
             db_session.query(Customer).filter(Customer.id == g.user.id).update({'balance': g.user.balance - c.price})
             db_session.add(c)
