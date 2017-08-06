@@ -55,5 +55,4 @@ DB initialisation.
 
 ### See Also ###
 
-* https://github.com/pallets/flask
-* https://github.com/rosickey/flask-datatables
+* https://github.com/jockey10/coffee-pickles-springboot/
