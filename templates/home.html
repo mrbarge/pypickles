@@ -13,7 +13,7 @@
     <script th:inline="javascript">
 
         $.ajax({
-            url: "/coffeedates/user1",
+            url: "/coffeedates/{{ user.user_name }}",
             dataType: "json"
         }).done(function(jsonData)  {
 
@@ -48,7 +48,7 @@
     <script th:inline="javascript">
 
         $.ajax({
-            url: "/coffeedays/user1",
+            url: "/coffeedays/{{ user.user_name }}",
             dataType: "json"
         }).done(function(jsonData)  {
 

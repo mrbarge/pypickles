@@ -23,11 +23,14 @@ app.config.update(dict(
 app.config.from_envvar('APP_CONFIG', silent=True)
 app.secret_key = app.config['SECRET_KEY']
 
+
 def get_db_engine():
     url = 'postgresql://{}:{}@{}:{}/{}'
-    url = url.format(app.config['DB_USER'], app.config['DB_PASS'], app.config['DB_HOST'], app.config['DB_PORT'], app.config['DATABASE'])
+    url = url.format(app.config['DB_USER'], app.config['DB_PASS'],
+                     app.config['DB_HOST'], app.config['DB_PORT'], app.config['DATABASE'])
     con = sqlalchemy.create_engine(url, client_encoding='utf8')
     return con
+
 
 def get_db_session():
     conn = get_db_engine()
@@ -38,6 +41,7 @@ def get_db_session():
     session_factory = sessionmaker(bind=conn)
     session = scoped_session(session_factory)
     return session, meta
+
 
 def init_db():
     """Initializes the database."""
@@ -71,11 +75,13 @@ def init_db():
 
     conn.close()
 
+
 @app.teardown_appcontext
 def close_db(error):
     """Closes the database again at the end of the request."""
     if hasattr(g, 'db_session'):
         g.db_session.close()
+
 
 def get_db():
     """Closes the database again at the end of the request."""
@@ -83,13 +89,20 @@ def get_db():
         g.db_session, g.db_meta = get_db_session()
     return g.db_session
 
+
 @app.before_request
 def before_request():
-    db_session = get_db()
-    g.user = None
-    c = db_session.query(Customer).filter(Customer.user_name=='user1').first()
-    if c is not None:
-        g.user = c
+    clientcn = None
+    user = getattr(g, 'user', None)
+    if user is None:
+        if request.headers.get('X-SSL-Client-CN'):
+            clientcn = request.headers.get('X-SSL-Client-CN')
+        if clientcn is not None:
+            db_session = get_db()
+            c = db_session.query(Customer).filter(Customer.user_name==clientcn).first()
+            if c is not None:
+                g.user = c
+
 
 @app.route('/')
 def index():
@@ -97,7 +110,11 @@ def index():
         session = get_db()
         recent_payments = session.query(Payment).filter(Payment.user == g.user).order_by(Payment.date.desc()).limit(5).all()
         num_coffees = session.query(Coffee).filter(Coffee.user == g.user).count()
-    return render_template('home.html',payments=recent_payments, user=g.user, coffee_total=num_coffees)
+        return render_template('home.html',payments=recent_payments, user=g.user, coffee_total=num_coffees)
+    else:
+        flash('You are not a registered user.', 'Error')
+        return render_template('home.html', payments={}, user=None, coffee_total=0)
+
 
 @app.route('/coffeedates/<user_name>')
 def get_coffee_dates(user_name):
@@ -116,6 +133,7 @@ def get_coffee_dates(user_name):
 
     return jsonify(base_dates)
 
+
 @app.route('/coffeedays/<user_name>')
 def get_coffee_days(user_name):
     db_session = get_db()
@@ -130,6 +148,7 @@ def get_coffee_days(user_name):
         data[str(k)] = int(v)
 
     return jsonify(data)
+
 
 @app.route('/coffee', methods=['POST'])
 def add_coffee():
@@ -147,6 +166,7 @@ def add_coffee():
         flash('Unable to add a coffee: {0}'.format(str(err)), 'Error')
     return redirect(url_for('index'))
     #return render_template('home.html')
+
 
 @app.route('/payment', methods=['POST'])
 def add_payment():
