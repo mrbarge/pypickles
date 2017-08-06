@@ -115,8 +115,6 @@ def get_coffee_dates(user_name):
         base_dates[str(k)] = int(v)
 
     return jsonify(base_dates)
-#    return jsonify(list(base_dates.items()))
-
 
 @app.route('/coffeedays/<user_name>')
 def get_coffee_days(user_name):
@@ -126,14 +124,12 @@ def get_coffee_days(user_name):
         return jsonify({"error": "user does not exist"})
 
     data = OrderedDict((calendar.day_name[x], 0) for x in range(0,7))
-    print data
     c = db_session.query(sqlalchemy.func.to_char(Coffee.date, 'FMDay'),
                          sqlalchemy.func.count(Coffee.date)).filter(Coffee.user_id == user.id).group_by(sqlalchemy.func.to_char(Coffee.date, 'FMDay')).all()
     for (k, v) in c:
         data[str(k)] = int(v)
 
     return jsonify(data)
-#    return jsonify(list(data.items()))
 
 @app.route('/coffee', methods=['POST'])
 def add_coffee():
