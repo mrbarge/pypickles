@@ -6,7 +6,83 @@ jockey10's coffee-pickles-sprintboot application.
 
 ![pypickles](http://i.imgur.com/b3Euv2T.png)
 
-### Installation ###
+### OpenShift-based Quickstart ###
+
+pypickles can be built and run fairly easily on OpenShift. Here's a quick starting-from-scratch guide:
+
+* Download [OpenShift Origin](https://www.openshift.org/)
+
+* Start up a cluster, log in with your desired user and project.
+
+```bash
+# oc cluster up
+```
+
+* Create a PostgreSQL database.
+
+```bash
+# oc new-app \
+    -e POSTGRESQL_USER=<username> \
+    -e POSTGRESQL_PASSWORD=<password> \
+    -e POSTGRESQL_DATABASE=<database_name> \
+    centos/postgresql-95-centos7
+```
+
+* Create the pypickles app.
+
+```bash
+# oc new-app https://github.com/mrbarge/pypickles.git
+```
+
+* Create a config map that will represent the application's config.
+
+```bash
+# oc create configmap appconfig
+```
+
+* Edit the config map.
+
+```bash
+# oc edit configmap appconfig
+```
+
+Define the config using the database config used in step 3. Define DB_HOST as the IP address where your PostgreSQL pod is running.
+
+```yaml
+apiVersion: v1
+data:
+  application.properties: |
+    DATABASE='<database_name>'
+    DB_USER='<username>'
+    DB_PASS='<password>'
+    DB_PORT='5432'
+    DB_HOST='<db host ip>'
+    COFFEE_PRICE=1
+    SERVER_PORT=8080
+kind: ConfigMap
+```
+	
+* Create a new volume and volume mount for your config map. The example below will place it under /appcfg
+
+```bash
+# oc volume dc/pypickles --name appcfg -t configmap --mount-path=/appcfg --configmap-name=appconfig --add
+```
+
+* Define the environment variable APP_CONFIG to point to the path of your config map file, as defined by the arguments of step 7.
+
+```bash
+# oc env dc/pypickles APP_CONFIG=/appcfg/application.properties
+```
+
+* Create a new route that exposes the service.
+
+```bash
+# oc expose svc/pypickles
+```
+
+* pypickles should now be running. A predefined user "user1" will have been created. See "User Authentication" below for options on how to use user authentication.
+
+### Manual Installation ###
 
 If using pypickles with a postgres database, you'll need the following dependency for SQLAlchemy:
 
